@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<style>
+     header{
+        display: flex;
+        gap: 17rem;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        color: rgb(0, 68, 255);
+        text-align: center;
+        
+    }
+    header img{
+        width: 200px;
+        height: 200px;
+        margin-left: 50px;
+    }
+
+    .login {
+        text-align: center;
+        background-color: rgb(156, 214, 255);
+        width: 500px;
+        height: 400px;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+        border-radius: 15px;
+        margin-left: 510px;
+    }
+
+    input {
+  width: 250px;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+button {
+  padding: 10px 15px;
+  background: rgb(0, 68, 255);
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+    
+</style>
+<body>
+     <header>
+        <div>
+            <img src="imagem/logo.jpg" alt="rebanho">
+            
+        </div>
+        <div>
+            <h1> Contador Automático de Rebanho</h1>
+        </div>
+
+    </header>
+
+    <div class="login">
+        
+        <img src="imagem/logo-usuario.png" alt="usuario">
+        <h2>Login</h2>
+
+        <input type="text" id="usuario" placeholder="Usuário">
+        <br>
+        <input type= "password" id="senha" placeholder="Senha">
+        <br>
+        <button onclick="login()">Entrar</button>
+        <br>
+        <p>
+            Não tem conta?
+            <a href="cadastro.html">Cadastre-se</a>
+        </p>
+
+    </div>
+    <script src="login.js"></script>
+</body>
+</html>

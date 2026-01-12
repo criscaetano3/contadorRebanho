@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Usuário</title>
+    <style>
+        header{
+        display: flex;
+        gap: 17rem;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        color: rgb(0, 68, 255);
+        text-align: center;
+        
+    }
+    header img{
+        width: 200px;
+        height: 200px;
+        margin-left: 50px;
+    }
+
+    .cadastro{
+        text-align: center;
+    }
+
+    .cadastro input{
+        padding-top: 5px;
+        width: 200px;
+    }
+
+    .cadastro h2{
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    }
+
+
+    </style>
+</head>
+<body>
+     <header>
+        <div>
+            <img src="imagem/logo.jpg" alt="rebanho">
+            
+        </div>
+        <div>
+            <h1> Contador Automático de Rebanho</h1>
+        </div>
+
+    </header>
+
+<div class="cadastro">
+  <h2>Cadastrar Usuário</h2>
+
+  <input type="text" id="usuario" placeholder="Usuário">
+  <br><br>
+  <input type="password" id="senha" placeholder="Senha">
+  <br><br>
+  <input type="password" id="confirmar" placeholder="Confirmar senha">
+  <br><br>
+
+  <button onclick="cadastrar()">Cadastrar</button>
+
+  <p>
+    Já tem conta?
+    <a href="login.html">Fazer login</a>
+  </p>
+</div>
+
+<script src="cadastro.js"></script>
+    
+</body>
+</html>
