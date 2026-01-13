@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contador de Rebanho</title>
+
+    <!-- TensorFlow e modelo IA -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+</head>
+<style>
+
+    
+    header{
+        display: flex;
+        gap: 17rem;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        color: rgb(0, 68, 255);
+        text-align: center;
+        
+    }
+    header div img{
+        width: 200px;
+        height: 200px;
+        margin-left: 50px;
+    }
+
+    .fazenda {
+  background: white;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.fazenda input {
+  margin-left: 60px;
+  padding: 8px;
+  width: 70%;
+}
+
+.fazenda button {
+  padding: 8px;
+  background: rgb(0, 68, 255);
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+    .camera {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    }
+
+    div {
+    display: block;
+    unicode-bidi: isolate;
+}
+
+    video, canvas{
+    width: 100%;
+    border-radius: 10px;
+
+    }
+
+    canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+    .contador{
+        align-items: center;
+        text-align: center;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+    .contador span{
+        color: rgb(0, 68, 255);
+        font-size: 30px;
+    }
+   .historico{
+    text-align: center;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    align-items: center;
+   }
+
+   .historico ul {
+  list-style: none;
+  padding: 0;
+}
+
+.historico item {
+  background: #e8f5e9;
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 5px;
+}
+
+</style>
+<body>
+    <header>
+        <div>
+            <img src="imagem/logo.jpg" alt="rebanho">
+        </div>
+        <div>
+            <h1> Contador Automático de Rebanho</h1>
+        </div>
+    </header>
+
+    <button onclick="logout()">Sair</button>
+
+    <div class="fazenda">
+        <input type="text" id="fazenda" placeholder="Nome da fazenda">
+        <button onclick="selecionarFazenda()">Selecionar Fazenda</button>
+    </div>
+    <div class="camera">
+        <video id="video" autoplay></video>
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="contador">
+        <h2>Total de Animais</h2>
+        <span id="totalSpan">0</span>
+    </div>
+    <div class="historico">
+        <h3>Histórico de Contagem</h3>
+        <ul id="listaDatas"></ul>
+    </div>
+
+    
+
+
+    <script src="script1.js"></script>
+</body>
+</html>

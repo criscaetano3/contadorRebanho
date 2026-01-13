@@ -20,15 +20,26 @@ const listaDatas = document.getElementById("listaDatas")
 
 let FazendaAtual="";
 let animaisContados = new Set();
-let linhaY = 220;
+let linhaY;
 
-//Camera
-async function iniciarCamera(){
-    const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" }
+video.addEventListener("loadedmetadata", () => {
+  linhaY = canvas.height * 0.6; // 60% da tela
+});
+
+// CÂMERA
+async function iniciarCamera() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: "environment" } },
+    audio: false
   });
+
   video.srcObject = stream;
-    
+
+  video.addEventListener("loadedmetadata", () => {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    linhaY = canvas.height * 0.6;
+  });
 }
 
 
@@ -49,7 +60,7 @@ function salvarDados(dados) {
 
 let dados = carregarDados();
 let hoje = dataHoje();
-let total = 0;
+
 
 //selecionar fazenda
 function selecionarFazenda() {
@@ -87,9 +98,6 @@ function atualizarHistorico() {
 async function iniciarIA() {
   const model = await cocoSsd.load();
 
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-
   setInterval(async () => {
     if (!fazendaAtual) return;
 
@@ -105,11 +113,10 @@ async function iniciarIA() {
     predictions.forEach(p => {
       if (p.class === "cow") {
         const [x, y, w, h] = p.bbox;
-        ctx.strokeStyle = "green";
+        ctx.strokeStyle = "lime";
         ctx.strokeRect(x, y, w, h);
 
-        const id = Math.round(x + y);
-
+        const id = Math.round(x + y + w + h);
         if (y + h > linhaY && !animaisContados.has(id)) {
           animaisContados.add(id);
           total++;
@@ -123,5 +130,5 @@ async function iniciarIA() {
   }, 1000);
 }
 
-//play
+// Play
 iniciarCamera().then(iniciarIA);

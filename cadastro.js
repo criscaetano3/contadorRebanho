@@ -31,6 +31,6 @@ function cadastrar() {
   usuarios[usuario] = { senha };
   salvarUsuarios(usuarios);
 
-  alert("Usuário cadastrado com sucesso!");
+  alert("Cadastro realizado com sucesso!");
   window.location.href = "login.html";
 }
