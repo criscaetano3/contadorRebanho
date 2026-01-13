@@ -20,7 +20,7 @@ function login() {
 
   if (usuarios[usuario].senha === senha) {
     localStorage.setItem("usuarioLogado", usuario);
-    window.location.href = "main.html";
+    window.location.href = "index.html";
   } else {
     alert("Senha incorreta");
   }
