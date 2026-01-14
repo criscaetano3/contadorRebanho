@@ -1,141 +1,11 @@
-body{
-    margin:0;
-    text-aling: center;
-}
-
-
-header{
-        display: flex;
-        gap: 17rem;
-        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-        color: rgb(0, 68, 255);
-        text-align: center;
-        
-    }
-    header div img{
-        width: 200px;
-        height: 200px;
-        margin-left: 50px;
-    }
-
-    .fazenda {
-  background: white;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-}
-
-.fazenda input {
-  margin-left: 60px;
-  padding: 8px;
-  width: 70%;
-}
-
-.fazenda button {
-  padding: 8px;
-  background: rgb(0, 68, 255);
-  color: white;
-  border: none;
-  border-radius: 5px;
-}
-
-    .camera {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    margin: auto;
-    }
-
-    div {
-    display: block;
-    unicode-bidi: isolate;
-}
-
-    video, canvas{
-    width: 100%;
-    border-radius: 10px;
-
-    }
-
-    canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-    .contador{
-        align-items: center;
-        text-align: center;
-        font-family: Verdana, Geneva, Tahoma, sans-serif;
-    }
-    .contador span{
-        color: rgb(0, 68, 255);
-        font-size: 30px;
-    }
-   .historico{
-    text-align: center;
-    font-family:Verdana, Geneva, Tahoma, sans-serif;
-    align-items: center;
-   }
-
-   .historico ul {
-  list-style: none;
-  padding: 0;
-}
-
-.historico item {
-  background: #e8f5e9;
-  margin: 5px 0;
-  padding: 8px;
-  border-radius: 5px;
-}
-
- .login {
-        text-align: center;
-        background-color: rgb(156, 214, 255);
-        width: 500px;
-        height: 400px;
-        align-items: center;
-        text-align: center;
-        justify-content: center;
-        border-radius: 15px;
-        margin-left: 510px;
-    }
-
-    input {
-  width: 250px;
-  padding: 10px;
-  margin: 8px 0;
-}
-
-button {
-  padding: 10px 15px;
-  background: rgb(0, 68, 255);
-  color: white;
-  border: none;
-  border-radius: 5px;
-}
-
-.cadastro{
-        text-align: center;
-    }
-
-    .cadastro input{
-        padding-top: 5px;
-        width: 200px;
-    }
-
-    .cadastro h2{
-        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    }
-
-
+/* RESET */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* BODY */
 body {
   font-family: Arial, Helvetica, sans-serif;
   background: #e8f5e9;
@@ -143,6 +13,22 @@ body {
   min-height: 100vh;
 }
 
+/* HEADER */
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Franklin Gothic Medium', Arial, sans-serif;
+  color: rgb(0, 68, 255);
+}
+
+header img {
+  width: 120px;
+  height: auto;
+}
+
+/* TÍTULOS */
 h1 {
   font-size: 1.4rem;
   margin: 12px 0;
@@ -157,6 +43,8 @@ h3 {
   font-size: 1.1rem;
   margin-bottom: 8px;
 }
+
+/* CAIXAS */
 .login,
 .fazenda,
 .historico {
@@ -169,21 +57,22 @@ h3 {
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+/* INPUTS */
 input {
   width: 100%;
   padding: 14px;
   margin: 10px 0;
-  font-size: 16px; /* evita zoom automático no celular */
+  font-size: 16px; /* evita zoom no celular */
   border-radius: 8px;
   border: 1px solid #ccc;
 }
 
-
+/* BOTÕES */
 button {
-  width: 100px;
-  padding: 15px;
+  width: 100%;
+  padding: 14px;
   margin-top: 10px;
-  font-size: 15px;
+  font-size: 16px;
   background: rgb(0, 68, 255);
   color: white;
   border: none;
@@ -191,11 +80,12 @@ button {
   cursor: pointer;
 }
 
+
 button:active {
   transform: scale(0.98);
 }
 
-
+/* LOGOUT */
 .logout {
   position: fixed;
   top: 10px;
@@ -206,7 +96,8 @@ button:active {
   z-index: 10;
 }
 
-
+/* CÂMERA */
+.camera,
 .camera-box {
   position: relative;
   width: 95%;
@@ -229,7 +120,17 @@ canvas {
   left: 0;
 }
 
+/* CONTADOR */
+.contador {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
 
+.contador span {
+  color: rgb(0, 68, 255);
+  font-size: 30px;
+}
+
+/* HISTÓRICO */
 .historico ul {
   list-style: none;
   padding: 0;
@@ -243,22 +144,26 @@ canvas {
   font-size: 15px;
 }
 
-
+/* LINKS */
 a {
   color: rgb(0, 68, 255);
   text-decoration: none;
   font-weight: bold;
 }
 
-
+/* TELAS MAIORES */
 @media (min-width: 768px) {
-  h1 {
-    font-size: 1.8rem;
+  header {
+    flex-direction: row;
+    justify-content: center;
+    gap: 40px;
   }
 
   .camera-box {
     max-width: 600px;
   }
 
-
+  h1 {
+    font-size: 1.8rem;
+  }
 }
