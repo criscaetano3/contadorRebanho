@@ -46,6 +46,7 @@ h3 {
 
 /* CAIXAS */
 .login,
+.cadastro,
 .fazenda,
 .historico {
   background: #ffffff;
@@ -169,11 +170,6 @@ a {
 }
 
 /* TEMA ESCURO */
-
-/* =========================
-   MODO ESCURO
-========================= */
-
 body.dark {
   background: #121212;
   color: #e0e0e0;
