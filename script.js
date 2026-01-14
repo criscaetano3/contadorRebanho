@@ -58,6 +58,20 @@ function salvarDados(dados) {
   localStorage.setItem("dados_" + usuarioLogado, JSON.stringify(dados));
 }
 
+function salvarContagem(fazenda, total) {
+  const hoje = new Date().toLocaleDateString();
+  const dados = JSON.parse(localStorage.getItem("contagens")) || [];
+
+  dados.push({
+    fazenda,
+    data: hoje,
+    total
+  });
+
+  localStorage.setItem("contagens", JSON.stringify(dados));
+}
+
+
 let dados = carregarDados();
 let hoje = dataHoje();
 
@@ -83,16 +97,19 @@ function selecionarFazenda() {
 
 
 //Histórico
-function atualizarHistorico() {
-  listaDatas.innerHTML = "";
-  if (!fazendaAtual) return;
+function carregarHistorico() {
+  const lista = document.getElementById("listaHistorico");
+  lista.innerHTML = "";
 
-  for (let data in dados[fazendaAtual]) {
+  const dados = JSON.parse(localStorage.getItem("contagens")) || [];
+
+  dados.forEach(item => {
     const li = document.createElement("li");
-    li.innerText = `📅 ${data} → 🐄 ${dados[fazendaAtual][data]}`;
-    listaDatas.appendChild(li);
-  }
+    li.textContent = `${item.data} - ${item.fazenda}: ${item.total} animais`;
+    lista.appendChild(li);
+  });
 }
+
 
 //IA
 async function iniciarIA() {
@@ -132,3 +149,33 @@ async function iniciarIA() {
 
 // Play
 iniciarCamera().then(iniciarIA);
+
+
+// TEMA ESCURO
+
+function toggleDarkMode() {
+  document.body.classList.toggle("dark");
+
+  // Salvar preferência
+  if (document.body.classList.contains("dark")) {
+    localStorage.setItem("modo", "dark");
+  } else {
+    localStorage.setItem("modo", "light");
+  }
+}
+
+// Carregar modo salvo
+window.onload = () => {
+  if (localStorage.getItem("modo") === "dark") {
+    document.body.classList.add("dark");
+  }
+};
+
+// MODO  OFFLINE
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("Modo offline ativado"))
+    .catch(err => console.log("Erro:", err));
+}
+

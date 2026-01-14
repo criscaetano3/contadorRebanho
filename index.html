@@ -8,16 +8,27 @@
     <!-- TensorFlow e modelo IA -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0044ff">
+
 </head>
 <link rel="stylesheet" href="style.css">
 <body>
     <header>
         <div>
-            <img src="imagem/logo.jpg" alt="rebanho">
+            <img src="imagem/logo.png" alt="rebanho">
         </div>
         <div>
             <h1> Contador Automático de Rebanho</h1>
         </div>
+        <div>
+            <button onclick="toggleDarkMode()" class="logout">🌙 Modo escuro
+</button>
+
+        </div>
+</button>
+
         <div>
             <button onclick="logout()">Sair</button>
         </div>

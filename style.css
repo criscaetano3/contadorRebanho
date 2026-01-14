@@ -167,3 +167,50 @@ a {
     font-size: 1.8rem;
   }
 }
+
+/* TEMA ESCURO */
+
+/* =========================
+   MODO ESCURO
+========================= */
+
+body.dark {
+  background: #121212;
+  color: #e0e0e0;
+}
+
+/* Caixas */
+body.dark .login,
+body.dark .fazenda,
+body.dark .historico {
+  background: #1e1e1e;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+}
+
+/* Inputs */
+body.dark input {
+  background: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+
+/* Botões */
+body.dark button {
+  background: #1565c0;
+}
+
+/* Header */
+body.dark header {
+  color: #90caf9;
+}
+
+/* Histórico */
+body.dark .historico li {
+  background: #263238;
+}
+
+/* Links */
+body.dark a {
+  color: #90caf9;
+}
+
