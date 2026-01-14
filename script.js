@@ -58,20 +58,6 @@ function salvarDados(dados) {
   localStorage.setItem("dados_" + usuarioLogado, JSON.stringify(dados));
 }
 
-function salvarContagem(fazenda, total) {
-  const hoje = new Date().toLocaleDateString();
-  const dados = JSON.parse(localStorage.getItem("contagens")) || [];
-
-  dados.push({
-    fazenda,
-    data: hoje,
-    total
-  });
-
-  localStorage.setItem("contagens", JSON.stringify(dados));
-}
-
-
 let dados = carregarDados();
 let hoje = dataHoje();
 
@@ -97,19 +83,16 @@ function selecionarFazenda() {
 
 
 //Histórico
-function carregarHistorico() {
-  const lista = document.getElementById("listaHistorico");
-  lista.innerHTML = "";
+function atualizarHistorico() {
+  listaDatas.innerHTML = "";
+  if (!fazendaAtual) return;
 
-  const dados = JSON.parse(localStorage.getItem("contagens")) || [];
-
-  dados.forEach(item => {
+  for (let data in dados[fazendaAtual]) {
     const li = document.createElement("li");
-    li.textContent = `${item.data} - ${item.fazenda}: ${item.total} animais`;
-    lista.appendChild(li);
-  });
+    li.innerText = `📅 ${data} → 🐄 ${dados[fazendaAtual][data]}`;
+    listaDatas.appendChild(li);
+  }
 }
-
 
 //IA
 async function iniciarIA() {
@@ -170,12 +153,4 @@ window.onload = () => {
     document.body.classList.add("dark");
   }
 };
-
-// MODO  OFFLINE
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js")
-    .then(() => console.log("Modo offline ativado"))
-    .catch(err => console.log("Erro:", err));
-}
 
