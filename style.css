@@ -1,0 +1,264 @@
+body{
+    margin:0;
+    text-aling: center;
+}
+
+
+header{
+        display: flex;
+        gap: 17rem;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        color: rgb(0, 68, 255);
+        text-align: center;
+        
+    }
+    header div img{
+        width: 200px;
+        height: 200px;
+        margin-left: 50px;
+    }
+
+    .fazenda {
+  background: white;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.fazenda input {
+  margin-left: 60px;
+  padding: 8px;
+  width: 70%;
+}
+
+.fazenda button {
+  padding: 8px;
+  background: rgb(0, 68, 255);
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+    .camera {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    }
+
+    div {
+    display: block;
+    unicode-bidi: isolate;
+}
+
+    video, canvas{
+    width: 100%;
+    border-radius: 10px;
+
+    }
+
+    canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+    .contador{
+        align-items: center;
+        text-align: center;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+    .contador span{
+        color: rgb(0, 68, 255);
+        font-size: 30px;
+    }
+   .historico{
+    text-align: center;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    align-items: center;
+   }
+
+   .historico ul {
+  list-style: none;
+  padding: 0;
+}
+
+.historico item {
+  background: #e8f5e9;
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 5px;
+}
+
+ .login {
+        text-align: center;
+        background-color: rgb(156, 214, 255);
+        width: 500px;
+        height: 400px;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+        border-radius: 15px;
+        margin-left: 510px;
+    }
+
+    input {
+  width: 250px;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+button {
+  padding: 10px 15px;
+  background: rgb(0, 68, 255);
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.cadastro{
+        text-align: center;
+    }
+
+    .cadastro input{
+        padding-top: 5px;
+        width: 200px;
+    }
+
+    .cadastro h2{
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    }
+
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #e8f5e9;
+  text-align: center;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 12px 0;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+.login,
+.fazenda,
+.historico {
+  background: #ffffff;
+  width: 95%;
+  max-width: 420px;
+  margin: 12px auto;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0;
+  font-size: 16px; /* evita zoom automático no celular */
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+
+button {
+  width: 100px;
+  padding: 15px;
+  margin-top: 10px;
+  font-size: 15px;
+  background: rgb(0, 68, 255);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+
+.logout {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: auto;
+  padding: 8px 12px;
+  font-size: 14px;
+  z-index: 10;
+}
+
+
+.camera-box {
+  position: relative;
+  width: 95%;
+  max-width: 420px;
+  margin: 12px auto;
+}
+
+video,
+canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  max-height: 65vh;
+  object-fit: cover;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+
+.historico ul {
+  list-style: none;
+  padding: 0;
+}
+
+.historico li {
+  background: #c8e6c9;
+  margin: 6px 0;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+
+a {
+  color: rgb(0, 68, 255);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .camera-box {
+    max-width: 600px;
+  }
+
+
+}
