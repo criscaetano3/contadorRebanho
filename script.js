@@ -1,55 +1,32 @@
-// Bloqueio acesso
 const usuarioLogado = localStorage.getItem("usuarioLogado");
-if (!usuarioLogado) {
-  window.location.href = "login.html";
-}
+if (!usuarioLogado) window.location.href = "login.html";
 
-// Sair
+// Logout
 function logout() {
   localStorage.removeItem("usuarioLogado");
   window.location.href = "login.html";
 }
 
-
+// Elementos
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const totalSpan = document.getElementById("total")
-const listaDatas = document.getElementById("listaDatas")
+const totalSpan = document.getElementById("total");
+const listaDatas = document.getElementById("listaDatas");
 
-
-let FazendaAtual="";
+let fazendaAtual = "";
+let total = 0;
 let animaisContados = new Set();
-let linhaY;
-
-video.addEventListener("loadedmetadata", () => {
-  linhaY = canvas.height * 0.6; // 60% da tela
-});
-
-// CÂMERA
-async function iniciarCamera() {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: "environment" } },
-    audio: false
-  });
-
-  video.srcObject = stream;
-
-  video.addEventListener("loadedmetadata", () => {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    linhaY = canvas.height * 0.6;
-  });
-}
-
-
+let linhaY = 0;
 
 // Data
 function dataHoje() {
   return new Date().toISOString().split("T")[0];
 }
 
-// Usuário
+let hoje = dataHoje();
+
+// Dados
 function carregarDados() {
   return JSON.parse(localStorage.getItem("dados_" + usuarioLogado)) || {};
 }
@@ -59,65 +36,61 @@ function salvarDados(dados) {
 }
 
 let dados = carregarDados();
-let hoje = dataHoje();
 
-
-//selecionar fazenda
+// Fazenda
 function selecionarFazenda() {
   const nome = document.getElementById("fazenda").value.trim();
-  if (!nome) {
-    alert("Digite o nome da fazenda");
-    return;
-  }
+  if (!nome) return alert("Digite a fazenda");
 
   fazendaAtual = nome;
+  animaisContados.clear();
 
   if (!dados[fazendaAtual]) dados[fazendaAtual] = {};
   if (!dados[fazendaAtual][hoje]) dados[fazendaAtual][hoje] = 0;
 
   total = dados[fazendaAtual][hoje];
   totalSpan.innerText = total;
-
   atualizarHistorico();
 }
 
-
-//Histórico
+// Histórico
 function atualizarHistorico() {
   listaDatas.innerHTML = "";
-  if (!fazendaAtual) return;
-
-  for (let data in dados[fazendaAtual]) {
+  for (let d in dados[fazendaAtual]) {
     const li = document.createElement("li");
-    li.innerText = `📅 ${data} → 🐄 ${dados[fazendaAtual][data]}`;
+    li.textContent = `${d} → ${dados[fazendaAtual][d]} animais`;
     listaDatas.appendChild(li);
   }
 }
 
-//IA
-async function iniciarIA() {
+// Câmera + IA
+async function iniciar() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+  });
+  video.srcObject = stream;
+
+  video.onloadedmetadata = () => {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    linhaY = canvas.height * 0.6;
+  };
+
   const model = await cocoSsd.load();
 
   setInterval(async () => {
     if (!fazendaAtual) return;
 
-    const predictions = await model.detect(video);
+    const preds = await model.detect(video);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = "red";
-    ctx.beginPath();
-    ctx.moveTo(0, linhaY);
-    ctx.lineTo(canvas.width, linhaY);
-    ctx.stroke();
-
-    predictions.forEach(p => {
+    preds.forEach(p => {
       if (p.class === "cow") {
-        const [x, y, w, h] = p.bbox;
-        ctx.strokeStyle = "lime";
-        ctx.strokeRect(x, y, w, h);
+        const [x,y,w,h] = p.bbox;
+        ctx.strokeRect(x,y,w,h);
 
-        const id = Math.round(x + y + w + h);
-        if (y + h > linhaY && !animaisContados.has(id)) {
+        const id = Math.round(x+y+w+h);
+        if (y+h > linhaY && !animaisContados.has(id)) {
           animaisContados.add(id);
           total++;
           dados[fazendaAtual][hoje] = total;
@@ -130,27 +103,12 @@ async function iniciarIA() {
   }, 1000);
 }
 
-// Play
-iniciarCamera().then(iniciarIA);
-
-
-// TEMA ESCURO
-
+// Tema escuro
 function toggleDarkMode() {
   document.body.classList.toggle("dark");
-
-  // Salvar preferência
-  if (document.body.classList.contains("dark")) {
-    localStorage.setItem("modo", "dark");
-  } else {
-    localStorage.setItem("modo", "light");
-  }
+  localStorage.setItem("modo", document.body.classList.contains("dark") ? "dark":"light");
 }
 
-// Carregar modo salvo
-window.onload = () => {
-  if (localStorage.getItem("modo") === "dark") {
-    document.body.classList.add("dark");
-  }
-};
+if (localStorage.getItem("modo")==="dark") document.body.classList.add("dark");
 
+iniciar();

@@ -1,27 +1,13 @@
-function carregarUsuarios() {
-  return JSON.parse(localStorage.getItem("usuarios")) || {};
-}
-
-function salvarUsuarios(usuarios) {
-  localStorage.setItem("usuarios", JSON.stringify(usuarios));
-}
-
 function cadastrar() {
   const usuario = document.getElementById("usuario").value.trim();
   const senha = document.getElementById("senha").value;
-  const confirmar = document.getElementById("confirmar").value;
 
-  if (!usuario || !senha || !confirmar) {
+  if (!usuario || !senha) {
     alert("Preencha todos os campos");
     return;
   }
 
-  if (senha !== confirmar) {
-    alert("As senhas não conferem");
-    return;
-  }
-
-  let usuarios = carregarUsuarios();
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
 
   if (usuarios[usuario]) {
     alert("Usuário já existe");
@@ -29,8 +15,8 @@ function cadastrar() {
   }
 
   usuarios[usuario] = { senha };
-  salvarUsuarios(usuarios);
+  localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-  alert("Cadastro realizado com sucesso!");
+  alert("Cadastro realizado!");
   window.location.href = "login.html";
 }

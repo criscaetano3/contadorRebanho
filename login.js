@@ -1,3 +1,9 @@
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("usuarioLogado")) {
+    window.location.href = "index.html";
+  }
+});
+
 function carregarUsuarios() {
   return JSON.parse(localStorage.getItem("usuarios")) || {};
 }
