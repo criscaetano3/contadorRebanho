@@ -1,7 +1,13 @@
+// BLOQUEIO DE ACESSO SEM LOGIN
 const usuarioLogado = localStorage.getItem("usuarioLogado");
-if (!usuarioLogado) window.location.href = "login.html";
 
-// Logout
+if (!usuarioLogado) {
+  window.location.replace("login.html");
+}
+
+
+
+//Login
 function logout() {
   localStorage.removeItem("usuarioLogado");
   window.location.href = "login.html";
@@ -11,7 +17,7 @@ function logout() {
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const totalSpan = document.getElementById("total");
+const totalSpan = document.getElementById("totalSpan");
 const listaDatas = document.getElementById("listaDatas");
 
 let fazendaAtual = "";
