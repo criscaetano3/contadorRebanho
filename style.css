@@ -47,6 +47,7 @@ h3 {
 /* CAIXAS */
 .login,
 .cadastro,
+.btn,
 .fazenda,
 .historico {
   background: #ffffff;
@@ -98,28 +99,29 @@ button:active {
 }
 
 /* CÂMERA */
-.camera,
-.camera-box {
+.camera {
   position: relative;
-  width: 95%;
+  width: 100%;
   max-width: 420px;
-  margin: 12px auto;
+  margin: auto;
 }
 
-video,
-canvas {
+video {
   width: 100%;
   height: auto;
   border-radius: 12px;
-  max-height: 65vh;
-  object-fit: cover;
 }
 
 canvas {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 10;
+  pointer-events: none;
 }
+
 
 /* CONTADOR */
 .contador {
@@ -168,6 +170,8 @@ a {
     font-size: 1.8rem;
   }
 }
+
+
 
 /* TEMA ESCURO */
 body.dark {

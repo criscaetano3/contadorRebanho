@@ -29,13 +29,25 @@
     </header>
 
     <div class="fazenda">
-        <input type="text" id="fazenda" placeholder="Nome da fazenda">
-        <button onclick="selecionarFazenda()">Selecionar Fazenda</button>
-    </div>
+  <input type="text" id="novaFazenda" placeholder="Nome da nova fazenda">
+  <button onclick="adicionarFazenda()">Adicionar Fazenda</button>
+
+  <br><br>
+
+  <select id="listaFazendas" onchange="selecionarFazenda()">
+    <option value="">Selecione a fazenda</option>
+  </select>
+</div>
+
     <div class="camera">
         <video id="video" autoplay></video>
         <canvas id="canvas"></canvas>
     </div>
+    <div class="btn">
+        <button id="btnIniciar" onclick="iniciarContagem()">▶️ Iniciar Contagem</button>
+        <button id="btnParar" onclick="pararContagem()" disabled>⏹️ Parar Contagem</button>
+    </div>
+
     <div class="contador">
         <h2>Total de Animais</h2>
         <span id="totalSpan">0</span>
