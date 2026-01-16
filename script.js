@@ -31,6 +31,7 @@ let contagemAtiva = false;
 let animaisContados = new Set();
 let intervaloIA = null;
 let model = null;
+let rastreioAnimais= {};
 
 
 //DATA
@@ -132,8 +133,6 @@ async function iniciarCamera() {
   video.onloadedmetadata = () => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    // Linha vertical no meio da tela
     linhaX = canvas.width * 0.5;
   };
 }
@@ -147,10 +146,10 @@ async function iniciarIA() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 🔴 LINHA VERTICAL
+    // 🔴 LINHA VERMELHA
     ctx.beginPath();
-    ctx.moveTo(linhaX, 0);          // topo
-    ctx.lineTo(linhaX, canvas.height); // base
+    ctx.moveTo(linhaX, 0);
+    ctx.lineTo(linhaX, canvas.height);
     ctx.strokeStyle = "red";
     ctx.lineWidth = 4;
     ctx.stroke();
@@ -162,27 +161,35 @@ async function iniciarIA() {
     predictions.forEach(p => {
       if (p.class === "cow") {
         const [x, y, w, h] = p.bbox;
+        const centroX = x + w / 2;
         ctx.strokeStyle = "lime";
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
 
-        const centroX = x + w / 2;
         const id = Math.round(x + y + w + h);
 
-        // Contar animal que cruza a linha vertical
-        if (centroX > linhaX && !animaisContados.has(id)) {
-          animaisContados.add(id);
-          total++;
+        // Primeira vez detectado
+        if (!rastreioAnimais[id]) {
+          rastreioAnimais[id] = centroX;
+          return;
+        }
 
+        const anterior = rastreioAnimais[id];
+
+        // 🐄 CRUZOU A LINHA (esquerda → direita)
+        if (anterior < linhaX && centroX >= linhaX) {
+          total++;
           dados[fazendaAtual][hoje] = total;
           salvarDados(dados);
-
           totalSpan.textContent = total;
           atualizarHistorico();
+           delete rastreioAnimais[id];
+        } else {
+          rastreioAnimais[id] = centroX;
         }
       }
     });
-  }, 1000);
+  }, 800);
 }
 
 //  INICIAR CONTAGEM
