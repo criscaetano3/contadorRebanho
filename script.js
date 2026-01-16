@@ -1,49 +1,52 @@
-//BLOQUEIO DE LOGIN
+// ===============================
+// 🔒 BLOQUEIO DE LOGIN
+// ===============================
 const usuarioLogado = localStorage.getItem("usuarioLogado");
 if (!usuarioLogado) {
   window.location.replace("login.html");
 }
 
-
-// LOGIN
-
+// ===============================
+// 🚪 LOGOUT
+// ===============================
 function logout() {
   localStorage.removeItem("usuarioLogado");
   window.location.href = "login.html";
 }
 
-
-//ELEMENTOS
-
+// ===============================
+// 🎥 ELEMENTOS
+// ===============================
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const totalSpan = document.getElementById("totalSpan");
 const listaDatas = document.getElementById("listaDatas");
 
-
-// VARIÁVEIS
-
+// ===============================
+// ⚙️ VARIÁVEIS
+// ===============================
 let fazendaAtual = "";
 let total = 0;
-let linhaX = 0;
 let contagemAtiva = false;
-let animaisContados = new Set();
-let intervaloIA = null;
+let linhaY = 0;
 let model = null;
-let rastreioAnimais= {};
+let intervaloIA = null;
 
+let ultimoRegistro = 0;
+const INTERVALO_MIN = 3000; // 3 segundos entre contagens
 
-//DATA
-
+// ===============================
+// 📅 DATA
+// ===============================
 function dataHoje() {
   return new Date().toISOString().split("T")[0];
 }
 const hoje = dataHoje();
 
-
-// DADOS
-
+// ===============================
+// 💾 DADOS
+// ===============================
 function carregarDados() {
   return JSON.parse(localStorage.getItem("dados_" + usuarioLogado)) || {};
 }
@@ -54,8 +57,9 @@ function salvarDados(dados) {
 
 let dados = carregarDados();
 
-// FAZENDAS
-
+// ===============================
+// 🌾 FAZENDAS
+// ===============================
 function carregarFazendas() {
   return JSON.parse(localStorage.getItem("fazendas_" + usuarioLogado)) || [];
 }
@@ -91,14 +95,14 @@ function adicionarFazenda() {
   atualizarListaFazendas();
 }
 
-// SELECIONAR FAZENDA
-
+// ===============================
+// 🌾 SELECIONAR FAZENDA
+// ===============================
 function selecionarFazenda() {
   const select = document.getElementById("listaFazendas");
   if (!select.value) return;
 
   fazendaAtual = select.value;
-  animaisContados.clear();
 
   if (!dados[fazendaAtual]) dados[fazendaAtual] = {};
   if (!dados[fazendaAtual][hoje]) dados[fazendaAtual][hoje] = 0;
@@ -108,8 +112,9 @@ function selecionarFazenda() {
   atualizarHistorico();
 }
 
-// HISTÓRICO
-
+// ===============================
+// 📜 HISTÓRICO
+// ===============================
 function atualizarHistorico() {
   listaDatas.innerHTML = "";
   if (!fazendaAtual) return;
@@ -121,7 +126,9 @@ function atualizarHistorico() {
   }
 }
 
-// CÂMERA
+// ===============================
+// 🎥 CÂMERA
+// ===============================
 async function iniciarCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({
     video: { facingMode: { ideal: "environment" } },
@@ -133,11 +140,15 @@ async function iniciarCamera() {
   video.onloadedmetadata = () => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    linhaX = canvas.width * 0.5;
+
+    // 🔴 Linha horizontal (ideal para curral)
+    linhaY = canvas.height * 0.6;
   };
 }
 
-// IA + LINHA + CONTAGEM
+// ===============================
+// 🤖 IA + CONTAGEM REAL
+// ===============================
 async function iniciarIA() {
   model = await cocoSsd.load();
 
@@ -146,10 +157,10 @@ async function iniciarIA() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 🔴 LINHA VERMELHA
+    // 🔴 DESENHA LINHA
     ctx.beginPath();
-    ctx.moveTo(linhaX, 0);
-    ctx.lineTo(linhaX, canvas.height);
+    ctx.moveTo(0, linhaY);
+    ctx.lineTo(canvas.width, linhaY);
     ctx.strokeStyle = "red";
     ctx.lineWidth = 4;
     ctx.stroke();
@@ -159,62 +170,57 @@ async function iniciarIA() {
     const predictions = await model.detect(video);
 
     predictions.forEach(p => {
-      if (p.class === "cow") {
+      if (["cow", "horse", "person"].includes(p.class) && p.score > 0.6) {
+
         const [x, y, w, h] = p.bbox;
-        const centroX = x + w / 2;
         ctx.strokeStyle = "lime";
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
 
-        const id = Math.round(x + y + w + h);
+        const centroY = y + h / 2;
+        const agora = Date.now();
 
-        // Primeira vez detectado
-        if (!rastreioAnimais[id]) {
-          rastreioAnimais[id] = centroX;
-          return;
-        }
-
-        const anterior = rastreioAnimais[id];
-
-        // 🐄 CRUZOU A LINHA (esquerda → direita)
-        if (anterior < linhaX && centroX >= linhaX) {
+        // ✅ CONTA SOMENTE SE CRUZAR A LINHA
+        if (centroY >= linhaY && agora - ultimoRegistro > INTERVALO_MIN) {
+          ultimoRegistro = agora;
           total++;
+
           dados[fazendaAtual][hoje] = total;
           salvarDados(dados);
+
           totalSpan.textContent = total;
           atualizarHistorico();
-           delete rastreioAnimais[id];
-        } else {
-          rastreioAnimais[id] = centroX;
         }
       }
     });
-  }, 800);
+  }, 700);
 }
 
-//  INICIAR CONTAGEM
-
+// ===============================
+// ▶️ INICIAR CONTAGEM
+// ===============================
 function iniciarContagem() {
   if (!fazendaAtual) return alert("Selecione a fazenda");
-
   contagemAtiva = true;
+  ultimoRegistro = 0;
+
   document.getElementById("btnIniciar").disabled = true;
   document.getElementById("btnParar").disabled = false;
 }
 
-
-// PARAR CONTAGEM
-
+// ===============================
+// ⏹️ PARAR CONTAGEM
+// ===============================
 function pararContagem() {
   contagemAtiva = false;
-  animaisContados.clear();
 
   document.getElementById("btnIniciar").disabled = false;
   document.getElementById("btnParar").disabled = true;
 }
 
-//MODO ESCURO
-
+// ===============================
+// 🌙 MODO ESCURO
+// ===============================
 function toggleDarkMode() {
   document.body.classList.toggle("dark");
   localStorage.setItem(
@@ -223,9 +229,9 @@ function toggleDarkMode() {
   );
 }
 
-
-// INICIAR APP
-
+// ===============================
+// 🚀 INICIAR APP
+// ===============================
 document.addEventListener("DOMContentLoaded", async () => {
   atualizarListaFazendas();
   await iniciarCamera();
