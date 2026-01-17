@@ -1,5 +1,5 @@
 // ===============================
-// 🔒 BLOQUEIO DE LOGIN
+// 🔐 BLOQUEIO DE LOGIN
 // ===============================
 const usuarioLogado = localStorage.getItem("usuarioLogado");
 if (!usuarioLogado) {
@@ -15,7 +15,7 @@ function logout() {
 }
 
 // ===============================
-// 🎥 ELEMENTOS
+// 📦 ELEMENTOS
 // ===============================
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
@@ -24,17 +24,15 @@ const totalSpan = document.getElementById("totalSpan");
 const listaDatas = document.getElementById("listaDatas");
 
 // ===============================
-// ⚙️ VARIÁVEIS
+// 🧠 VARIÁVEIS
 // ===============================
 let fazendaAtual = "";
+let pastoAtual = "";
 let total = 0;
-let contagemAtiva = false;
 let linhaY = 0;
+let contagemAtiva = false;
+let rastreio = {};
 let model = null;
-let intervaloIA = null;
-
-let ultimoRegistro = 0;
-const INTERVALO_MIN = 3000; // 3 segundos entre contagens
 
 // ===============================
 // 📅 DATA
@@ -58,57 +56,24 @@ function salvarDados(dados) {
 let dados = carregarDados();
 
 // ===============================
-// 🌾 FAZENDAS
-// ===============================
-function carregarFazendas() {
-  return JSON.parse(localStorage.getItem("fazendas_" + usuarioLogado)) || [];
-}
-
-function salvarFazendas(fazendas) {
-  localStorage.setItem("fazendas_" + usuarioLogado, JSON.stringify(fazendas));
-}
-
-function atualizarListaFazendas() {
-  const select = document.getElementById("listaFazendas");
-  select.innerHTML = '<option value="">Selecione a fazenda</option>';
-
-  carregarFazendas().forEach(f => {
-    const option = document.createElement("option");
-    option.value = f;
-    option.textContent = f;
-    select.appendChild(option);
-  });
-}
-
-function adicionarFazenda() {
-  const input = document.getElementById("novaFazenda");
-  const nome = input.value.trim();
-
-  if (!nome) return alert("Digite o nome da fazenda");
-
-  const fazendas = carregarFazendas();
-  if (fazendas.includes(nome)) return alert("Essa fazenda já existe");
-
-  fazendas.push(nome);
-  salvarFazendas(fazendas);
-  input.value = "";
-  atualizarListaFazendas();
-}
-
-// ===============================
-// 🌾 SELECIONAR FAZENDA
+// 🌾 FAZENDA / PASTO
 // ===============================
 function selecionarFazenda() {
-  const select = document.getElementById("listaFazendas");
-  if (!select.value) return;
+  fazendaAtual = document.getElementById("fazenda").value.trim();
+  pastoAtual = document.getElementById("pasto").value.trim();
 
-  fazendaAtual = select.value;
+  if (!fazendaAtual || !pastoAtual) {
+    alert("Informe a fazenda e o pasto");
+    return;
+  }
 
   if (!dados[fazendaAtual]) dados[fazendaAtual] = {};
-  if (!dados[fazendaAtual][hoje]) dados[fazendaAtual][hoje] = 0;
+  if (!dados[fazendaAtual][pastoAtual]) dados[fazendaAtual][pastoAtual] = {};
+  if (!dados[fazendaAtual][pastoAtual][hoje]) dados[fazendaAtual][pastoAtual][hoje] = [];
 
-  total = dados[fazendaAtual][hoje];
+  total = dados[fazendaAtual][pastoAtual][hoje].length;
   totalSpan.textContent = total;
+
   atualizarHistorico();
 }
 
@@ -117,21 +82,23 @@ function selecionarFazenda() {
 // ===============================
 function atualizarHistorico() {
   listaDatas.innerHTML = "";
-  if (!fazendaAtual) return;
+  if (!fazendaAtual || !pastoAtual) return;
 
-  for (let d in dados[fazendaAtual]) {
+  const registros = dados[fazendaAtual][pastoAtual];
+
+  for (let data in registros) {
     const li = document.createElement("li");
-    li.textContent = `📅 ${d} → 🐄 ${dados[fazendaAtual][d]} animais`;
+    li.textContent = `📅 ${data} → 🐄 ${registros[data].length} animais`;
     listaDatas.appendChild(li);
   }
 }
 
 // ===============================
-// 🎥 CÂMERA
+// 📷 CÂMERA
 // ===============================
 async function iniciarCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: "environment" } },
+    video: { facingMode: "environment" },
     audio: false
   });
 
@@ -140,24 +107,34 @@ async function iniciarCamera() {
   video.onloadedmetadata = () => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    // 🔴 Linha horizontal (ideal para curral)
-    linhaY = canvas.height * 0.6;
+    linhaY = canvas.height * 0.6; // linha horizontal
   };
 }
 
 // ===============================
-// 🤖 IA + CONTAGEM REAL
+// 🧠 IA + CONTAGEM CORRETA
 // ===============================
+function cruzouLinha(id, centroY) {
+  if (!rastreio[id]) {
+    rastreio[id] = centroY;
+    return false;
+  }
+
+  const anterior = rastreio[id];
+  rastreio[id] = centroY;
+
+  return anterior < linhaY && centroY >= linhaY;
+}
+
 async function iniciarIA() {
   model = await cocoSsd.load();
 
-  intervaloIA = setInterval(async () => {
+  setInterval(async () => {
     if (!canvas.width || !canvas.height) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 🔴 DESENHA LINHA
+    // 🔴 Linha vermelha
     ctx.beginPath();
     ctx.moveTo(0, linhaY);
     ctx.lineTo(canvas.width, linhaY);
@@ -165,57 +142,56 @@ async function iniciarIA() {
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    if (!contagemAtiva || !fazendaAtual) return;
+    if (!contagemAtiva || !fazendaAtual || !pastoAtual) return;
 
     const predictions = await model.detect(video);
 
     predictions.forEach(p => {
-      if (["cow", "horse", "person"].includes(p.class) && p.score > 0.6) {
-
+      if (p.class === "cow" && p.score > 0.6) {
         const [x, y, w, h] = p.bbox;
+        const centroY = y + h / 2;
+        const id = Math.round(x + y + w + h);
+
         ctx.strokeStyle = "lime";
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
 
-        const centroY = y + h / 2;
-        const agora = Date.now();
-
-        // ✅ CONTA SOMENTE SE CRUZAR A LINHA
-        if (centroY >= linhaY && agora - ultimoRegistro > INTERVALO_MIN) {
-          ultimoRegistro = agora;
+        if (cruzouLinha(id, centroY)) {
           total++;
-
-          dados[fazendaAtual][hoje] = total;
+          dados[fazendaAtual][pastoAtual][hoje].push(Date.now());
           salvarDados(dados);
-
           totalSpan.textContent = total;
           atualizarHistorico();
+          navigator.vibrate(100);
         }
       }
     });
-  }, 700);
+  }, 800);
 }
 
 // ===============================
-// ▶️ INICIAR CONTAGEM
+// ▶ INICIAR / ⏹ PARAR / 🔄 ZERAR
 // ===============================
 function iniciarContagem() {
-  if (!fazendaAtual) return alert("Selecione a fazenda");
+  if (!fazendaAtual || !pastoAtual) {
+    alert("Selecione fazenda e pasto");
+    return;
+  }
   contagemAtiva = true;
-  ultimoRegistro = 0;
-
-  document.getElementById("btnIniciar").disabled = true;
-  document.getElementById("btnParar").disabled = false;
+  rastreio = {};
 }
 
-// ===============================
-// ⏹️ PARAR CONTAGEM
-// ===============================
 function pararContagem() {
   contagemAtiva = false;
+}
 
-  document.getElementById("btnIniciar").disabled = false;
-  document.getElementById("btnParar").disabled = true;
+function zerarContagem() {
+  if (!fazendaAtual || !pastoAtual) return;
+  dados[fazendaAtual][pastoAtual][hoje] = [];
+  total = 0;
+  totalSpan.textContent = 0;
+  salvarDados(dados);
+  atualizarHistorico();
 }
 
 // ===============================
@@ -223,8 +199,7 @@ function pararContagem() {
 // ===============================
 function toggleDarkMode() {
   document.body.classList.toggle("dark");
-  localStorage.setItem(
-    "modo",
+  localStorage.setItem("modo",
     document.body.classList.contains("dark") ? "dark" : "light"
   );
 }
@@ -233,11 +208,10 @@ function toggleDarkMode() {
 // 🚀 INICIAR APP
 // ===============================
 document.addEventListener("DOMContentLoaded", async () => {
-  atualizarListaFazendas();
-  await iniciarCamera();
-  iniciarIA();
-
   if (localStorage.getItem("modo") === "dark") {
     document.body.classList.add("dark");
   }
+
+  await iniciarCamera();
+  iniciarIA();
 });

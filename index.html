@@ -28,16 +28,11 @@
         </div>
     </header>
 
-    <div class="fazenda">
-  <input type="text" id="novaFazenda" placeholder="Nome da nova fazenda">
-  <button onclick="adicionarFazenda()">Adicionar Fazenda</button>
-
-  <br><br>
-
-  <select id="listaFazendas" onchange="selecionarFazenda()">
-    <option value="">Selecione a fazenda</option>
-  </select>
-</div>
+ <div class="fazenda">
+    <input type="text" id="fazenda" placeholder="Nome da fazenda" />
+    <input type="text" id="pasto" placeholder="Nome do pasto" />
+    <button onclick="selecionarFazenda()">Selecionar</button>
+  </div>
 
     <div class="camera">
         <video id="video" autoplay></video>
@@ -46,6 +41,7 @@
     <div class="btn">
         <button id="btnIniciar" onclick="iniciarContagem()">▶️ Iniciar Contagem</button>
         <button id="btnParar" onclick="pararContagem()" disabled>⏹️ Parar Contagem</button>
+        <button onclick="zerarContagem()">🔄 Zerar</button>
     </div>
 
     <div class="contador">
