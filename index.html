@@ -21,7 +21,7 @@
             <h1> Contador Automático de Rebanho</h1>
         </div>
         <div >
-            <button onclick="toggleDarkMode()" class="logout">🌙</button>
+            <button onclick="toggleDarkMode()" class="logout">Tema Escuro</button>
         </div>
         <div>
             <button onclick="logout()">Sair</button>
@@ -29,19 +29,31 @@
     </header>
 
  <div class="fazenda">
-    <input type="text" id="fazenda" placeholder="Nome da fazenda" />
-    <input type="text" id="pasto" placeholder="Nome do pasto" />
-    <button onclick="selecionarFazenda()">Selecionar</button>
-  </div>
+  <h3> Fazendas</h3>
+
+  <input type="text" id="novaFazenda" placeholder="Nome da fazenda">
+  <button onclick="adicionarFazenda()">Adicionar Fazenda</button>
+  <br><br>
+  <select id="selectFazenda" onchange="selecionarFazenda()"></select>
+  <br>
+
+  <h3>Pastos</h3>
+  <input type="text" id="novoPasto" placeholder="Nome do pasto">
+  <button onclick="adicionarPasto()">Adicionar Pasto</button>
+<br><br>
+  <select id="selectPasto" onchange="selecionarPasto()"></select>
+  <br><br>
+</div>
+
 
     <div class="camera">
         <video id="video" autoplay></video>
         <canvas id="canvas"></canvas>
     </div>
     <div class="btn">
-        <button id="btnIniciar" onclick="iniciarContagem()">▶️ Iniciar Contagem</button>
-        <button id="btnParar" onclick="pararContagem()" disabled>⏹️ Parar Contagem</button>
-        <button onclick="zerarContagem()">🔄 Zerar</button>
+        <button id="btnIniciar" onclick="iniciarContagem()">Iniciar Contagem</button>
+        <button id="btnParar" onclick="pararContagem()" disabled>Parar Contagem</button>
+        <button onclick="zerarContagem()">Zerar</button>
     </div>
 
     <div class="contador">

@@ -68,6 +68,12 @@ input {
   border-radius: 8px;
   border: 1px solid #ccc;
 }
+select{
+  width:150px;
+  height:40px;
+}
+
+
 
 /* BOTÕES */
 button {
