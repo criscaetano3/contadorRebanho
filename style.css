@@ -151,6 +151,8 @@ canvas {
   padding: 10px;
   border-radius: 8px;
   font-size: 15px;
+  list-style: none;
+  padding: 4px 0;
 }
 
 /* LINKS */

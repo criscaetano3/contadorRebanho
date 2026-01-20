@@ -1,31 +1,25 @@
-// ===============================
 // BLOQUEIO DE LOGIN
-// ===============================
+
 const usuarioLogado = localStorage.getItem("usuarioLogado");
 if (!usuarioLogado) {
   window.location.replace("login.html");
 }
 
-// ===============================
-// LOGOUT
-// ===============================
 function logout() {
   localStorage.removeItem("usuarioLogado");
   window.location.href = "login.html";
 }
 
-// ===============================
 // ELEMENTOS
-// ===============================
+
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const totalSpan = document.getElementById("totalSpan");
 const listaDatas = document.getElementById("listaDatas");
 
-// ===============================
 // VARIÁVEIS
-// ===============================
+
 let fazendaAtual = "";
 let pastoAtual = "";
 let total = 0;
@@ -34,17 +28,16 @@ let contagemAtiva = false;
 let rastreio = {};
 let model = null;
 
-// ===============================
 // DATA
-// ===============================
+
 function dataHoje() {
   return new Date().toISOString().split("T")[0];
 }
 const hoje = dataHoje();
 
-// ===============================
+
 // DADOS DE CONTAGEM
-// ===============================
+
 function carregarDados() {
   return JSON.parse(localStorage.getItem("dados_" + usuarioLogado)) || {};
 }
@@ -55,13 +48,8 @@ function salvarDados(dados) {
 
 let dados = carregarDados();
 
-// ===============================
 // FAZENDAS E PASTOS
-// Estrutura:
-// {
-//   "Fazenda A": ["Pasto 1", "Pasto 2"]
-// }
-// ===============================
+
 function carregarFazendas() {
   return JSON.parse(localStorage.getItem("fazendas_" + usuarioLogado)) || {};
 }
@@ -70,18 +58,17 @@ function salvarFazendas(fazendas) {
   localStorage.setItem("fazendas_" + usuarioLogado, JSON.stringify(fazendas));
 }
 
-// ===============================
 // ATUALIZAR SELECTS
-// ===============================
+
 function atualizarSelectFazendas() {
   const select = document.getElementById("selectFazenda");
   select.innerHTML = `<option value="">Selecione a fazenda</option>`;
 
   const fazendas = carregarFazendas();
-  Object.keys(fazendas).forEach(f => {
+  Object.keys(fazendas).forEach(nome => {
     const opt = document.createElement("option");
-    opt.value = f;
-    opt.textContent = f;
+    opt.value = nome;
+    opt.textContent = nome;
     select.appendChild(opt);
   });
 }
@@ -93,39 +80,41 @@ function atualizarSelectPastos() {
   if (!fazendaAtual) return;
 
   const fazendas = carregarFazendas();
-  fazendas[fazendaAtual].forEach(p => {
+  fazendas[fazendaAtual].forEach(pasto => {
     const opt = document.createElement("option");
-    opt.value = p;
-    opt.textContent = p;
+    opt.value = pasto;
+    opt.textContent = pasto;
     select.appendChild(opt);
   });
 }
 
-// ===============================
-// ADICIONAR FAZENDA (CORRIGIDO)
-// ===============================
+// ADICIONAR FAZENDA
+
 function adicionarFazenda() {
-  const input = document.getElementById("novaFazenda");
-  const nome = input.value.trim();
+  const nome = document.getElementById("novaFazenda").value.trim();
   if (!nome) return alert("Digite o nome da fazenda");
 
   const fazendas = carregarFazendas();
-  if (fazendas[nome]) return alert("Fazenda já cadastrada");
 
-  fazendas[nome] = []; // cria lista de pastos
+  if (fazendas[nome]) {
+    alert("Fazenda já cadastrada");
+    return;
+  }
+
+  fazendas[nome] = [];
   salvarFazendas(fazendas);
 
-  input.value = "";
+  document.getElementById("novaFazenda").value = "";
   atualizarSelectFazendas();
 }
 
-// ===============================
+
 // ADICIONAR PASTO
-// ===============================
+
 function adicionarPasto() {
   const nome = document.getElementById("novoPasto").value.trim();
   if (!fazendaAtual || !nome) {
-    alert("Selecione a fazenda e digite o pasto");
+    alert("Selecione a fazenda e digite o nome do pasto");
     return;
   }
 
@@ -142,9 +131,9 @@ function adicionarPasto() {
   atualizarSelectPastos();
 }
 
-// ===============================
+
 // SELEÇÃO
-// ===============================
+
 function selecionarFazenda() {
   fazendaAtual = document.getElementById("selectFazenda").value;
   pastoAtual = "";
@@ -153,7 +142,6 @@ function selecionarFazenda() {
 
 function selecionarPasto() {
   pastoAtual = document.getElementById("selectPasto").value;
-  if (!pastoAtual) return;
 
   if (!dados[fazendaAtual]) dados[fazendaAtual] = {};
   if (!dados[fazendaAtual][pastoAtual]) dados[fazendaAtual][pastoAtual] = {};
@@ -164,97 +152,35 @@ function selecionarPasto() {
   atualizarHistorico();
 }
 
-// ===============================
-// HISTÓRICO
-// ===============================
+// HISTÓRICO COMPLETO
+
 function atualizarHistorico() {
   listaDatas.innerHTML = "";
-  if (!fazendaAtual || !pastoAtual) return;
 
-  const registros = dados[fazendaAtual][pastoAtual];
-  for (let d in registros) {
-    const li = document.createElement("li");
-    li.textContent = `📅 ${d} → 🐄 ${registros[d].length} animais`;
-    listaDatas.appendChild(li);
-  }
-}
+  Object.keys(dados).forEach(fazenda => {
+    const liFazenda = document.createElement("li");
+    liFazenda.innerHTML = `<strong>🏡 Fazenda: ${fazenda}</strong>`;
+    listaDatas.appendChild(liFazenda);
 
-// ===============================
-// CÂMERA
-// ===============================
-async function iniciarCamera() {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" },
-    audio: false
-  });
+    Object.keys(dados[fazenda]).forEach(pasto => {
+      const liPasto = document.createElement("li");
+      liPasto.style.marginLeft = "15px";
+      liPasto.textContent = `🌱 Pasto: ${pasto}`;
+      listaDatas.appendChild(liPasto);
 
-  video.srcObject = stream;
-
-  video.onloadedmetadata = () => {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    linhaY = canvas.height * 0.6;
-  };
-}
-
-// ===============================
-// IA – CONTAR SOMENTE AO CRUZAR A LINHA
-// ===============================
-function cruzouLinha(id, centroY) {
-  if (!rastreio[id]) {
-    rastreio[id] = centroY;
-    return false;
-  }
-  const anterior = rastreio[id];
-  rastreio[id] = centroY;
-  return anterior < linhaY && centroY >= linhaY;
-}
-
-async function iniciarIA() {
-  model = await cocoSsd.load();
-
-  setInterval(async () => {
-    if (!canvas.width) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Linha vermelha
-    ctx.beginPath();
-    ctx.moveTo(0, linhaY);
-    ctx.lineTo(canvas.width, linhaY);
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 4;
-    ctx.stroke();
-
-    if (!contagemAtiva || !fazendaAtual || !pastoAtual) return;
-
-    const preds = await model.detect(video);
-
-    preds.forEach(p => {
-      if (p.class === "cow" && p.score > 0.6) {
-        const [x, y, w, h] = p.bbox;
-        const centroY = y + h / 2;
-        const id = Math.round(x + y + w + h);
-
-        ctx.strokeStyle = "lime";
-        ctx.strokeRect(x, y, w, h);
-
-        if (cruzouLinha(id, centroY)) {
-          dados[fazendaAtual][pastoAtual][hoje].push(Date.now());
-          salvarDados(dados);
-          total++;
-          totalSpan.textContent = total;
-          atualizarHistorico();
-          navigator.vibrate(100);
-        }
-      }
+      Object.keys(dados[fazenda][pasto]).forEach(data => {
+        const liData = document.createElement("li");
+        liData.style.marginLeft = "30px";
+        liData.textContent =
+          `📅 ${data} → 🐄 ${dados[fazenda][pasto][data].length} animais`;
+        listaDatas.appendChild(liData);
+      });
     });
-  }, 800);
+  });
 }
 
-// ===============================
-// BOTÕES
-// ===============================
+// CONTROLE
+
 function iniciarContagem() {
   if (!fazendaAtual || !pastoAtual) {
     alert("Selecione fazenda e pasto");
@@ -270,6 +196,7 @@ function pararContagem() {
 
 function zerarContagem() {
   if (!fazendaAtual || !pastoAtual) return;
+
   dados[fazendaAtual][pastoAtual][hoje] = [];
   total = 0;
   totalSpan.textContent = 0;
@@ -277,27 +204,9 @@ function zerarContagem() {
   atualizarHistorico();
 }
 
-// ===============================
-// MODO ESCURO
-// ===============================
-function toggleDarkMode() {
-  document.body.classList.toggle("dark");
-  localStorage.setItem(
-    "modo",
-    document.body.classList.contains("dark") ? "dark" : "light"
-  );
-}
-
-// ===============================
 // INICIAR APP
-// ===============================
-document.addEventListener("DOMContentLoaded", async () => {
+
+document.addEventListener("DOMContentLoaded", () => {
   atualizarSelectFazendas();
-
-  if (localStorage.getItem("modo") === "dark") {
-    document.body.classList.add("dark");
-  }
-
-  await iniciarCamera();
-  iniciarIA();
+  atualizarHistorico();
 });
