@@ -21,16 +21,13 @@ const listaDatas = document.getElementById("listaDatas");
 let fazendaAtual = "";
 let pastoAtual = "";
 let total = 0;
-let linhaY = 0;              // 🔴 linha horizontal
+let linhaY = null; // linha horizontal
 let contagemAtiva = false;
 let rastreio = {};
 let model = null;
 
 // 📅 DATA
-function dataHoje() {
-  return new Date().toISOString().split("T")[0];
-}
-const hoje = dataHoje();
+const hoje = new Date().toISOString().split("T")[0];
 
 // 📊 DADOS
 function carregarDados() {
@@ -49,37 +46,26 @@ function salvarFazendas(fazendas) {
   localStorage.setItem("fazendas_" + usuarioLogado, JSON.stringify(fazendas));
 }
 
-// 🔄 SELECT FAZENDA
+// 🔄 SELECTS
 function atualizarSelectFazendas() {
   const select = document.getElementById("selectFazenda");
   select.innerHTML = `<option value="">Selecione a fazenda</option>`;
-
-  const fazendas = carregarFazendas();
-  Object.keys(fazendas).forEach(nome => {
-    const opt = document.createElement("option");
-    opt.value = nome;
-    opt.textContent = nome;
-    select.appendChild(opt);
+  Object.keys(carregarFazendas()).forEach(nome => {
+    select.innerHTML += `<option value="${nome}">${nome}</option>`;
   });
 }
 
-// 🔄 SELECT PASTO
 function atualizarSelectPastos() {
   const select = document.getElementById("selectPasto");
   select.innerHTML = `<option value="">Selecione o pasto</option>`;
-
   if (!fazendaAtual) return;
 
-  const fazendas = carregarFazendas();
-  fazendas[fazendaAtual].forEach(pasto => {
-    const opt = document.createElement("option");
-    opt.value = pasto;
-    opt.textContent = pasto;
-    select.appendChild(opt);
-  });
+  carregarFazendas()[fazendaAtual].forEach(p =>
+    select.innerHTML += `<option value="${p}">${p}</option>`
+  );
 }
 
-// ➕ ADICIONAR FAZENDA
+// ➕ FAZENDA / PASTO
 function adicionarFazenda() {
   const nome = document.getElementById("novaFazenda").value.trim();
   if (!nome) return alert("Digite o nome da fazenda");
@@ -92,10 +78,8 @@ function adicionarFazenda() {
   atualizarSelectFazendas();
 }
 
-// ➕ ADICIONAR PASTO
 function adicionarPasto() {
   if (!fazendaAtual) return alert("Selecione a fazenda");
-
   const nome = document.getElementById("novoPasto").value.trim();
   if (!nome) return alert("Digite o nome do pasto");
 
@@ -119,10 +103,9 @@ function selecionarPasto() {
   pastoAtual = document.getElementById("selectPasto").value;
   if (!pastoAtual) return;
 
-  if (!dados[fazendaAtual]) dados[fazendaAtual] = {};
-  if (!dados[fazendaAtual][pastoAtual]) dados[fazendaAtual][pastoAtual] = {};
-  if (!dados[fazendaAtual][pastoAtual][hoje])
-    dados[fazendaAtual][pastoAtual][hoje] = [];
+  dados[fazendaAtual] ??= {};
+  dados[fazendaAtual][pastoAtual] ??= {};
+  dados[fazendaAtual][pastoAtual][hoje] ??= [];
 
   total = dados[fazendaAtual][pastoAtual][hoje].length;
   totalSpan.textContent = total;
@@ -132,67 +115,55 @@ function selecionarPasto() {
 // 📜 HISTÓRICO
 function atualizarHistorico() {
   listaDatas.innerHTML = "";
-
-  Object.keys(dados).forEach(fazenda => {
-    Object.keys(dados[fazenda]).forEach(pasto => {
-      Object.keys(dados[fazenda][pasto]).forEach(data => {
-        const qtd = dados[fazenda][pasto][data].length;
-        if (qtd > 0) {
-          const li = document.createElement("li");
-          li.textContent = `🏡 ${fazenda} | 🌱 ${pasto} | 📅 ${data} → 🐄 ${qtd}`;
-          listaDatas.appendChild(li);
-        }
-      });
-    });
-  });
+  Object.keys(dados).forEach(f =>
+    Object.keys(dados[f]).forEach(p =>
+      Object.keys(dados[f][p]).forEach(d => {
+        const q = dados[f][p][d].length;
+        if (q > 0)
+          listaDatas.innerHTML +=
+            `<li>🏡 ${f} | 🌱 ${p} | 📅 ${d} → 🐄 ${q}</li>`;
+      })
+    )
+  );
 }
 
 // 📷 CÂMERA (CELULAR EM PÉ)
 async function iniciarCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: {
-      facingMode: "environment",
-      width: { ideal: 720 },
-      height: { ideal: 1280 }
-    },
+    video: { facingMode: "environment" },
     audio: false
   });
 
   video.srcObject = stream;
-
   video.onloadedmetadata = () => {
     video.play();
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    // 🔴 linha horizontal
     linhaY = canvas.height * 0.6;
   };
 }
 
-// 🧠 CRUZAMENTO DA LINHA (CIMA → BAIXO)
-function cruzouLinha(id, centroY) {
+// 🧠 CRUZAMENTO (CIMA → BAIXO)
+function cruzouLinha(id, y) {
   if (!rastreio[id]) {
-    rastreio[id] = centroY;
+    rastreio[id] = y;
     return false;
   }
-
   const anterior = rastreio[id];
-  rastreio[id] = centroY;
-
-  return anterior < linhaY - 20 && centroY >= linhaY + 20;
+  rastreio[id] = y;
+  return anterior < linhaY && y >= linhaY;
 }
 
-// 🤖 IA + CONTAGEM
+// 🤖 IA
 async function iniciarIA() {
   model = await cocoSsd.load();
 
   setInterval(async () => {
-    if (!canvas.width) return;
+    if (!linhaY) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 🔴 DESENHAR LINHA
+    // 🔴 linha
     ctx.beginPath();
     ctx.moveTo(0, linhaY);
     ctx.lineTo(canvas.width, linhaY);
@@ -200,22 +171,16 @@ async function iniciarIA() {
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    if (!contagemAtiva || !fazendaAtual || !pastoAtual) return;
+    if (!contagemAtiva) return;
 
     const preds = await model.detect(video);
-
     preds.forEach(p => {
       if (p.class === "cow" && p.score > 0.6) {
         const [x, y, w, h] = p.bbox;
         const centroY = y + h / 2;
-
-        const id =
-          Math.round((x + w / 2) / 40) +
-          "_" +
-          Math.round(centroY / 40);
+        const id = Math.round(x / 60) + "_" + Math.round(centroY / 60);
 
         ctx.strokeStyle = "lime";
-        ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
 
         if (cruzouLinha(id, centroY)) {
@@ -227,7 +192,7 @@ async function iniciarIA() {
         }
       }
     });
-  }, 700);
+  }, 600);
 }
 
 // ▶ CONTROLES
@@ -252,7 +217,7 @@ function zerarContagem() {
   atualizarHistorico();
 }
 
-// 🚀 INICIAR APP
+// 🚀 START
 document.addEventListener("DOMContentLoaded", async () => {
   atualizarSelectFazendas();
   await iniciarCamera();
