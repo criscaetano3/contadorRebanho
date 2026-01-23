@@ -21,7 +21,7 @@ const listaDatas = document.getElementById("listaDatas");
 let fazendaAtual = "";
 let pastoAtual = "";
 let total = 0;
-let linhaX = 0; // 🔴 LINHA VERTICAL
+let linhaX = 0; // 🔴 linha vertical
 let contagemAtiva = false;
 let rastreio = {};
 let model = null;
@@ -41,7 +41,7 @@ function salvarDados(dados) {
 }
 let dados = carregarDados();
 
-// 🌾 FAZENDAS
+// 🌾 FAZENDAS E PASTOS
 function carregarFazendas() {
   return JSON.parse(localStorage.getItem("fazendas_" + usuarioLogado)) || {};
 }
@@ -49,10 +49,11 @@ function salvarFazendas(fazendas) {
   localStorage.setItem("fazendas_" + usuarioLogado, JSON.stringify(fazendas));
 }
 
-// 🔄 SELECT FAZENDA
+// 🔄 ATUALIZAR SELECT FAZENDA
 function atualizarSelectFazendas() {
   const select = document.getElementById("selectFazenda");
-  select.innerHTML = <option value="">Selecione a fazenda</option>;
+  select.innerHTML = `<option value="">Selecione a fazenda</option>`;
+
   const fazendas = carregarFazendas();
   Object.keys(fazendas).forEach(nome => {
     const opt = document.createElement("option");
@@ -62,10 +63,11 @@ function atualizarSelectFazendas() {
   });
 }
 
-// 🔄 SELECT PASTO
+// 🔄 ATUALIZAR SELECT PASTO
 function atualizarSelectPastos() {
   const select = document.getElementById("selectPasto");
-  select.innerHTML = <option value="">Selecione o pasto</option>;
+  select.innerHTML = `<option value="">Selecione o pasto</option>`;
+
   if (!fazendaAtual) return;
 
   const fazendas = carregarFazendas();
@@ -77,7 +79,7 @@ function atualizarSelectPastos() {
   });
 }
 
-// ➕ FAZENDA
+// ➕ ADICIONAR FAZENDA
 function adicionarFazenda() {
   const input = document.getElementById("novaFazenda");
   const nome = input.value.trim();
@@ -92,9 +94,10 @@ function adicionarFazenda() {
   atualizarSelectFazendas();
 }
 
-// ➕ PASTO
+// ➕ ADICIONAR PASTO
 function adicionarPasto() {
   if (!fazendaAtual) return alert("Selecione a fazenda");
+
   const input = document.getElementById("novoPasto");
   const nome = input.value.trim();
   if (!nome) return alert("Digite o nome do pasto");
@@ -130,16 +133,17 @@ function selecionarPasto() {
   atualizarHistorico();
 }
 
-// 📜 HISTÓRICO
+// 📜 HISTÓRICO (SÓ MOSTRA SE TIVER CONTAGEM)
 function atualizarHistorico() {
   listaDatas.innerHTML = "";
+
   Object.keys(dados).forEach(fazenda => {
     Object.keys(dados[fazenda]).forEach(pasto => {
       Object.keys(dados[fazenda][pasto]).forEach(data => {
         const qtd = dados[fazenda][pasto][data].length;
         if (qtd > 0) {
           const li = document.createElement("li");
-          li.textContent = 🏡 ${fazenda} | 🌱 ${pasto} | 📅 ${data} → 🐄 ${qtd};
+          li.textContent = `🏡 ${fazenda} | 🌱 ${pasto} | 📅 ${data} → 🐄 ${qtd}`;
           listaDatas.appendChild(li);
         }
       });
@@ -158,11 +162,11 @@ async function iniciarCamera() {
   video.onloadedmetadata = () => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    linhaX = canvas.width * 0.5; // 🔴 linha vertical no meio
+    linhaX = canvas.width * 0.5; // 🔴 linha no meio
   };
 }
 
-// 🧠 CRUZAMENTO DA LINHA (ESQUERDA → DIREITA)
+// 🧠 DETECTAR CRUZAMENTO DA LINHA (ESQUERDA → DIREITA)
 function cruzouLinha(id, centroX) {
   if (!rastreio[id]) {
     rastreio[id] = centroX;
@@ -172,17 +176,19 @@ function cruzouLinha(id, centroX) {
   const anterior = rastreio[id];
   rastreio[id] = centroX;
 
-  return anterior < linhaX && centroX >= linhaX;
+  return anterior < linhaX - 15 && centroX >= linhaX + 15;
 }
 
-// 🤖 IA
+// 🤖 IA + CONTAGEM
 async function iniciarIA() {
   model = await cocoSsd.load();
 
   setInterval(async () => {
+    if (!canvas.width || !canvas.height) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 🔴 linha vertical
+    // 🔴 LINHA VERMELHA VERTICAL
     ctx.beginPath();
     ctx.moveTo(linhaX, 0);
     ctx.lineTo(linhaX, canvas.height);
@@ -198,9 +204,14 @@ async function iniciarIA() {
       if (p.class === "cow" && p.score > 0.6) {
         const [x, y, w, h] = p.bbox;
         const centroX = x + w / 2;
-        const id = Math.round(x + y + w + h);
+
+        const id =
+          Math.round(centroX / 40) +
+          "_" +
+          Math.round((y + h / 2) / 40);
 
         ctx.strokeStyle = "lime";
+        ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
 
         if (cruzouLinha(id, centroX)) {
@@ -212,13 +223,14 @@ async function iniciarIA() {
         }
       }
     });
-  }, 700);
+  }, 800);
 }
 
 // ▶ CONTROLES
 function iniciarContagem() {
   if (!fazendaAtual || !pastoAtual)
     return alert("Selecione fazenda e pasto");
+
   contagemAtiva = true;
   rastreio = {};
 }
@@ -236,7 +248,7 @@ function zerarContagem() {
   atualizarHistorico();
 }
 
-// 🚀 INICIAR
+// 🚀 INICIAR APP
 document.addEventListener("DOMContentLoaded", async () => {
   atualizarSelectFazendas();
   await iniciarCamera();
