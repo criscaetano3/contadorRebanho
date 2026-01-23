@@ -26,13 +26,13 @@ let contagemAtiva = false;
 let rastreio = {};
 let model = null;
 
-// 📅 DATA
+// 📅 DATA ATUAL
 function dataHoje() {
   return new Date().toISOString().split("T")[0];
 }
 const hoje = dataHoje();
 
-// 📊 DADOS
+// 📊 DADOS DE CONTAGEM
 function carregarDados() {
   return JSON.parse(localStorage.getItem("dados_" + usuarioLogado)) || {};
 }
@@ -49,7 +49,7 @@ function salvarFazendas(fazendas) {
   localStorage.setItem("fazendas_" + usuarioLogado, JSON.stringify(fazendas));
 }
 
-// 🔄 ATUALIZAR SELECT FAZENDA
+// 🔄 SELECT FAZENDA
 function atualizarSelectFazendas() {
   const select = document.getElementById("selectFazenda");
   select.innerHTML = `<option value="">Selecione a fazenda</option>`;
@@ -63,7 +63,7 @@ function atualizarSelectFazendas() {
   });
 }
 
-// 🔄 ATUALIZAR SELECT PASTO
+// 🔄 SELECT PASTO
 function atualizarSelectPastos() {
   const select = document.getElementById("selectPasto");
   select.innerHTML = `<option value="">Selecione o pasto</option>`;
@@ -81,8 +81,7 @@ function atualizarSelectPastos() {
 
 // ➕ ADICIONAR FAZENDA
 function adicionarFazenda() {
-  const input = document.getElementById("novaFazenda");
-  const nome = input.value.trim();
+  const nome = document.getElementById("novaFazenda").value.trim();
   if (!nome) return alert("Digite o nome da fazenda");
 
   const fazendas = carregarFazendas();
@@ -90,16 +89,15 @@ function adicionarFazenda() {
 
   fazendas[nome] = [];
   salvarFazendas(fazendas);
-  input.value = "";
   atualizarSelectFazendas();
+  document.getElementById("novaFazenda").value = "";
 }
 
 // ➕ ADICIONAR PASTO
 function adicionarPasto() {
   if (!fazendaAtual) return alert("Selecione a fazenda");
 
-  const input = document.getElementById("novoPasto");
-  const nome = input.value.trim();
+  const nome = document.getElementById("novoPasto").value.trim();
   if (!nome) return alert("Digite o nome do pasto");
 
   const fazendas = carregarFazendas();
@@ -108,8 +106,8 @@ function adicionarPasto() {
 
   fazendas[fazendaAtual].push(nome);
   salvarFazendas(fazendas);
-  input.value = "";
   atualizarSelectPastos();
+  document.getElementById("novoPasto").value = "";
 }
 
 // 🎯 SELEÇÕES
@@ -133,7 +131,7 @@ function selecionarPasto() {
   atualizarHistorico();
 }
 
-// 📜 HISTÓRICO COMPLETO
+// 📜 HISTÓRICO
 function atualizarHistorico() {
   listaDatas.innerHTML = "";
 
@@ -162,28 +160,31 @@ async function iniciarCamera() {
   video.onloadedmetadata = () => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    linhaY = canvas.height * 0.6;
+    linhaY = canvas.height * 0.7;
   };
 }
 
-// 🧠 IA – CRUZAMENTO DE LINHA
+// 🧠 DETECTA CRUZAMENTO DA LINHA
 function cruzouLinha(id, centroY) {
   if (!rastreio[id]) {
     rastreio[id] = centroY;
     return false;
   }
+
   const anterior = rastreio[id];
   rastreio[id] = centroY;
-  return anterior < linhaY && centroY >= linhaY;
+
+  return anterior < linhaY - 10 && centroY >= linhaY + 10;
 }
 
+// 🤖 IA – COCO SSD
 async function iniciarIA() {
   model = await cocoSsd.load();
 
   setInterval(async () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // linha vermelha
+    // 🟥 linha vermelha
     ctx.beginPath();
     ctx.moveTo(0, linhaY);
     ctx.lineTo(canvas.width, linhaY);
@@ -194,13 +195,18 @@ async function iniciarIA() {
     if (!contagemAtiva || !fazendaAtual || !pastoAtual) return;
 
     const preds = await model.detect(video);
+
     preds.forEach(p => {
-      if (p.class === "cow" && p.score > 0.6) {
+      if (p.class === "cow" && p.score > 0.35) {
         const [x, y, w, h] = p.bbox;
         const centroY = y + h / 2;
-        const id = Math.round(x + y + w + h);
+
+        const id =
+          Math.round((x + w / 2) / 50) + "_" +
+          Math.round((y + h / 2) / 50);
 
         ctx.strokeStyle = "lime";
+        ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
 
         if (cruzouLinha(id, centroY)) {
@@ -212,13 +218,14 @@ async function iniciarIA() {
         }
       }
     });
-  }, 800);
+  }, 700);
 }
 
 // ▶ CONTROLES
 function iniciarContagem() {
   if (!fazendaAtual || !pastoAtual)
     return alert("Selecione fazenda e pasto");
+
   contagemAtiva = true;
   rastreio = {};
 }
@@ -229,6 +236,7 @@ function pararContagem() {
 
 function zerarContagem() {
   if (!fazendaAtual || !pastoAtual) return;
+
   dados[fazendaAtual][pastoAtual][hoje] = [];
   salvarDados(dados);
   total = 0;
