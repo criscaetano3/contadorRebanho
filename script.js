@@ -21,7 +21,7 @@ const listaDatas = document.getElementById("listaDatas");
 let fazendaAtual = "";
 let pastoAtual = "";
 let total = 0;
-let linhaX = 0; // 🔴 linha vertical
+let linhaY = 0;              // 🔴 linha horizontal
 let contagemAtiva = false;
 let rastreio = {};
 let model = null;
@@ -79,7 +79,7 @@ function atualizarSelectPastos() {
   });
 }
 
-// ➕ FAZENDA
+// ➕ ADICIONAR FAZENDA
 function adicionarFazenda() {
   const nome = document.getElementById("novaFazenda").value.trim();
   if (!nome) return alert("Digite o nome da fazenda");
@@ -92,7 +92,7 @@ function adicionarFazenda() {
   atualizarSelectFazendas();
 }
 
-// ➕ PASTO
+// ➕ ADICIONAR PASTO
 function adicionarPasto() {
   if (!fazendaAtual) return alert("Selecione a fazenda");
 
@@ -100,16 +100,15 @@ function adicionarPasto() {
   if (!nome) return alert("Digite o nome do pasto");
 
   const fazendas = carregarFazendas();
-  if (fazendas[fazendaAtual].includes(nome)) {
+  if (fazendas[fazendaAtual].includes(nome))
     return alert("Pasto já existe");
-  }
 
   fazendas[fazendaAtual].push(nome);
   salvarFazendas(fazendas);
   atualizarSelectPastos();
 }
 
-// 🎯 SELEÇÕES
+// 🎯 SELEÇÃO
 function selecionarFazenda() {
   fazendaAtual = document.getElementById("selectFazenda").value;
   pastoAtual = "";
@@ -122,9 +121,8 @@ function selecionarPasto() {
 
   if (!dados[fazendaAtual]) dados[fazendaAtual] = {};
   if (!dados[fazendaAtual][pastoAtual]) dados[fazendaAtual][pastoAtual] = {};
-  if (!dados[fazendaAtual][pastoAtual][hoje]) {
+  if (!dados[fazendaAtual][pastoAtual][hoje])
     dados[fazendaAtual][pastoAtual][hoje] = [];
-  }
 
   total = dados[fazendaAtual][pastoAtual][hoje].length;
   totalSpan.textContent = total;
@@ -152,32 +150,40 @@ function atualizarHistorico() {
 // 📷 CÂMERA (CELULAR EM PÉ)
 async function iniciarCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" },
+    video: {
+      facingMode: "environment",
+      width: { ideal: 720 },
+      height: { ideal: 1280 }
+    },
     audio: false
   });
+
   video.srcObject = stream;
 
   video.onloadedmetadata = () => {
+    video.play();
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    linhaX = canvas.width * 0.5; // 🔴 linha central
+
+    // 🔴 linha horizontal
+    linhaY = canvas.height * 0.6;
   };
 }
 
-// 🧠 CRUZAMENTO ESQUERDA ➜ DIREITA
-function cruzouLinha(id, centroX) {
+// 🧠 CRUZAMENTO DA LINHA (CIMA → BAIXO)
+function cruzouLinha(id, centroY) {
   if (!rastreio[id]) {
-    rastreio[id] = centroX;
+    rastreio[id] = centroY;
     return false;
   }
 
   const anterior = rastreio[id];
-  rastreio[id] = centroX;
+  rastreio[id] = centroY;
 
-  return anterior < linhaX - 20 && centroX >= linhaX + 20;
+  return anterior < linhaY - 20 && centroY >= linhaY + 20;
 }
 
-// 🤖 IA
+// 🤖 IA + CONTAGEM
 async function iniciarIA() {
   model = await cocoSsd.load();
 
@@ -186,10 +192,10 @@ async function iniciarIA() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 🔴 linha vermelha
+    // 🔴 DESENHAR LINHA
     ctx.beginPath();
-    ctx.moveTo(linhaX, 0);
-    ctx.lineTo(linhaX, canvas.height);
+    ctx.moveTo(0, linhaY);
+    ctx.lineTo(canvas.width, linhaY);
     ctx.strokeStyle = "red";
     ctx.lineWidth = 4;
     ctx.stroke();
@@ -201,18 +207,18 @@ async function iniciarIA() {
     preds.forEach(p => {
       if (p.class === "cow" && p.score > 0.6) {
         const [x, y, w, h] = p.bbox;
-        const centroX = x + w / 2;
+        const centroY = y + h / 2;
 
         const id =
-          Math.round(centroX / 40) +
+          Math.round((x + w / 2) / 40) +
           "_" +
-          Math.round((y + h / 2) / 40);
+          Math.round(centroY / 40);
 
         ctx.strokeStyle = "lime";
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
 
-        if (cruzouLinha(id, centroX)) {
+        if (cruzouLinha(id, centroY)) {
           dados[fazendaAtual][pastoAtual][hoje].push(Date.now());
           salvarDados(dados);
           total++;
@@ -226,9 +232,9 @@ async function iniciarIA() {
 
 // ▶ CONTROLES
 function iniciarContagem() {
-  if (!fazendaAtual || !pastoAtual) {
+  if (!fazendaAtual || !pastoAtual)
     return alert("Selecione fazenda e pasto");
-  }
+
   contagemAtiva = true;
   rastreio = {};
 }
@@ -246,7 +252,7 @@ function zerarContagem() {
   atualizarHistorico();
 }
 
-// 🚀 INICIAR
+// 🚀 INICIAR APP
 document.addEventListener("DOMContentLoaded", async () => {
   atualizarSelectFazendas();
   await iniciarCamera();
