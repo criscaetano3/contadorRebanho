@@ -41,7 +41,7 @@ function salvarDados(dados) {
 }
 let dados = carregarDados();
 
-// 🌾 FAZENDAS E PASTOS
+// 🌾 FAZENDAS
 function carregarFazendas() {
   return JSON.parse(localStorage.getItem("fazendas_" + usuarioLogado)) || {};
 }
@@ -49,7 +49,7 @@ function salvarFazendas(fazendas) {
   localStorage.setItem("fazendas_" + usuarioLogado, JSON.stringify(fazendas));
 }
 
-// 🔄 ATUALIZAR SELECT FAZENDA
+// 🔄 SELECT FAZENDA
 function atualizarSelectFazendas() {
   const select = document.getElementById("selectFazenda");
   select.innerHTML = `<option value="">Selecione a fazenda</option>`;
@@ -63,7 +63,7 @@ function atualizarSelectFazendas() {
   });
 }
 
-// 🔄 ATUALIZAR SELECT PASTO
+// 🔄 SELECT PASTO
 function atualizarSelectPastos() {
   const select = document.getElementById("selectPasto");
   select.innerHTML = `<option value="">Selecione o pasto</option>`;
@@ -79,10 +79,9 @@ function atualizarSelectPastos() {
   });
 }
 
-// ➕ ADICIONAR FAZENDA
+// ➕ FAZENDA
 function adicionarFazenda() {
-  const input = document.getElementById("novaFazenda");
-  const nome = input.value.trim();
+  const nome = document.getElementById("novaFazenda").value.trim();
   if (!nome) return alert("Digite o nome da fazenda");
 
   const fazendas = carregarFazendas();
@@ -90,25 +89,23 @@ function adicionarFazenda() {
 
   fazendas[nome] = [];
   salvarFazendas(fazendas);
-  input.value = "";
   atualizarSelectFazendas();
 }
 
-// ➕ ADICIONAR PASTO
+// ➕ PASTO
 function adicionarPasto() {
   if (!fazendaAtual) return alert("Selecione a fazenda");
 
-  const input = document.getElementById("novoPasto");
-  const nome = input.value.trim();
+  const nome = document.getElementById("novoPasto").value.trim();
   if (!nome) return alert("Digite o nome do pasto");
 
   const fazendas = carregarFazendas();
-  if (fazendas[fazendaAtual].includes(nome))
+  if (fazendas[fazendaAtual].includes(nome)) {
     return alert("Pasto já existe");
+  }
 
   fazendas[fazendaAtual].push(nome);
   salvarFazendas(fazendas);
-  input.value = "";
   atualizarSelectPastos();
 }
 
@@ -125,15 +122,16 @@ function selecionarPasto() {
 
   if (!dados[fazendaAtual]) dados[fazendaAtual] = {};
   if (!dados[fazendaAtual][pastoAtual]) dados[fazendaAtual][pastoAtual] = {};
-  if (!dados[fazendaAtual][pastoAtual][hoje])
+  if (!dados[fazendaAtual][pastoAtual][hoje]) {
     dados[fazendaAtual][pastoAtual][hoje] = [];
+  }
 
   total = dados[fazendaAtual][pastoAtual][hoje].length;
   totalSpan.textContent = total;
   atualizarHistorico();
 }
 
-// 📜 HISTÓRICO (SÓ MOSTRA SE TIVER CONTAGEM)
+// 📜 HISTÓRICO
 function atualizarHistorico() {
   listaDatas.innerHTML = "";
 
@@ -162,11 +160,11 @@ async function iniciarCamera() {
   video.onloadedmetadata = () => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    linhaX = canvas.width * 0.5; // 🔴 linha no meio
+    linhaX = canvas.width * 0.5; // 🔴 linha central
   };
 }
 
-// 🧠 DETECTAR CRUZAMENTO DA LINHA (ESQUERDA → DIREITA)
+// 🧠 CRUZAMENTO ESQUERDA ➜ DIREITA
 function cruzouLinha(id, centroX) {
   if (!rastreio[id]) {
     rastreio[id] = centroX;
@@ -176,19 +174,19 @@ function cruzouLinha(id, centroX) {
   const anterior = rastreio[id];
   rastreio[id] = centroX;
 
-  return anterior < linhaX - 15 && centroX >= linhaX + 15;
+  return anterior < linhaX - 20 && centroX >= linhaX + 20;
 }
 
-// 🤖 IA + CONTAGEM
+// 🤖 IA
 async function iniciarIA() {
   model = await cocoSsd.load();
 
   setInterval(async () => {
-    if (!canvas.width || !canvas.height) return;
+    if (!canvas.width) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 🔴 LINHA VERMELHA VERTICAL
+    // 🔴 linha vermelha
     ctx.beginPath();
     ctx.moveTo(linhaX, 0);
     ctx.lineTo(linhaX, canvas.height);
@@ -223,14 +221,14 @@ async function iniciarIA() {
         }
       }
     });
-  }, 800);
+  }, 700);
 }
 
 // ▶ CONTROLES
 function iniciarContagem() {
-  if (!fazendaAtual || !pastoAtual)
+  if (!fazendaAtual || !pastoAtual) {
     return alert("Selecione fazenda e pasto");
-
+  }
   contagemAtiva = true;
   rastreio = {};
 }
@@ -248,7 +246,7 @@ function zerarContagem() {
   atualizarHistorico();
 }
 
-// 🚀 INICIAR APP
+// 🚀 INICIAR
 document.addEventListener("DOMContentLoaded", async () => {
   atualizarSelectFazendas();
   await iniciarCamera();
